@@ -3,6 +3,8 @@ import * as React from 'react';
 import { IconButton, ListDivider, ListItem, ListItemDecorator, Menu, MenuItem, Sheet, Stack, Switch, Typography, useColorScheme } from '@mui/joy';
 import { SxProps } from '@mui/joy/styles/types';
 import AddIcon from '@mui/icons-material/Add';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -17,8 +19,10 @@ import SwapVertIcon from '@mui/icons-material/SwapVert';
 import { ChatModelId, ChatModels, SystemPurposeId, SystemPurposes } from '@/lib/data';
 import { Link } from '@/components/util/Link';
 import { StyledDropdown } from '@/components/util/StyledDropdown';
+import { authNeeded } from '@/lib/auth';
 import { foolsMode } from '@/lib/theme';
 import { shallow } from 'zustand/shallow';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { useActiveConfiguration, useChatStore, useConversationNames } from '@/lib/store-chats';
 import { useSettingsStore } from '@/lib/store-settings';
 
@@ -115,7 +119,7 @@ export function ApplicationBar({ onClearConversation, onDownloadConversationJSON
     showSystemMessages: state.showSystemMessages, setShowSystemMessages: state.setShowSystemMessages,
   }), shallow);
   const { chatModelId, setChatModelId, setSystemPurposeId, systemPurposeId } = useActiveConfiguration();
-
+  const { data: session } = useSession();
 
   const handleChatModelChange = (event: any, value: ChatModelId | null) => value && setChatModelId(value);
 
@@ -177,12 +181,28 @@ export function ApplicationBar({ onClearConversation, onDownloadConversationJSON
         <StyledDropdown items={SystemPurposes} value={systemPurposeId} onChange={handleSystemPurposeChange} />
 
       </Stack>
+      <Stack direction='row'>
+        {authNeeded ? (
+          session?.user ? (
+              <IconButton onClick={() => signOut()}>
+                <LogoutIcon style={{ marginRight: '0.33em' }} />
+                <Typography level='body3'>Sign out {session.user?.name ?? ''}</Typography>
+              </IconButton>
+            )
+            : (
 
-      <IconButton variant='plain' onClick={event => setActionsMenuAnchor(event.currentTarget)}>
-        <MoreVertIcon />
-      </IconButton>
+              <IconButton onClick={() => signIn()}>
+                <LoginIcon style={{ marginRight: '0.33em' }} />
+                <Typography>Sign in </Typography>
+              </IconButton>
+            )
+        ) : <></>
+        }
+        <IconButton variant='plain' onClick={event => setActionsMenuAnchor(event.currentTarget)}>
+          <MoreVertIcon />
+        </IconButton>
+      </Stack>
     </Sheet>
-
 
     {/* Left menu */}
     {<PagesMenu
@@ -190,7 +210,6 @@ export function ApplicationBar({ onClearConversation, onDownloadConversationJSON
       onClose={closePagesMenu}
       onClearConversation={handleActionClearConversation}
     />}
-
 
     {/* Right menu */}
     <Menu

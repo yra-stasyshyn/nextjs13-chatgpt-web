@@ -18,6 +18,7 @@ import { requireUserKeyElevenLabs } from '@/components/dialogs/SettingsModal';
 import { speakText } from '@/lib/text-to-speech';
 import { streamAssistantMessage, updateAutoConversationTitle } from '@/lib/ai';
 import { useSettingsStore } from '@/lib/store-settings';
+import { trpc } from '@/lib/trpc-hooks';
 
 
 /**
@@ -71,6 +72,17 @@ const runAssistantUpdatingState = async (conversationId: string, history: DMessa
   await updateAutoConversationTitle(conversationId);
 };
 
+function IndexPage() {
+  const hello = trpc.greeting.useQuery({ name: 'Enrico' });
+  if (!hello.data) {
+    return <div>Loading...</div>;
+  }
+  return (
+    <div>
+      <p>{hello.data.text}</p>
+    </div>
+  );
+}
 
 export function Chat(props: { onShowSettings: () => void, sx?: SxProps }) {
   // state
@@ -139,6 +151,8 @@ export function Chat(props: { onShowSettings: () => void, sx?: SxProps }) {
           position: 'sticky', top: 0, zIndex: 20,
           // ...(process.env.NODE_ENV === 'development' ? { background: theme.vars.palette.danger.solidBg } : {}),
         }} />
+
+      <IndexPage />
 
       <ChatMessageList
         conversationId={activeConversationId}

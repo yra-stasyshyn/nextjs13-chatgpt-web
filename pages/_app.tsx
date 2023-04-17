@@ -5,8 +5,9 @@ import { AppProps } from 'next/app';
 import { CacheProvider, EmotionCache } from '@emotion/react';
 import { CssBaseline, CssVarsProvider } from '@mui/joy';
 
-import { createEmotionCache, theme } from '@/lib/theme';
 import '../styles/GithubMarkdown.css';
+import { createEmotionCache, theme } from '@/lib/theme';
+import { trpc } from '@/lib/trpc-hooks';
 
 
 // Client-side cache, shared for the whole session of the user in the browser.
@@ -16,7 +17,7 @@ export interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
 }
 
-export default function MyApp({ Component, emotionCache = clientSideEmotionCache, pageProps }: MyAppProps) {
+function MyApp({ Component, emotionCache = clientSideEmotionCache, pageProps }: MyAppProps) {
   return <>
     <CacheProvider value={emotionCache}>
       <Head>
@@ -31,3 +32,5 @@ export default function MyApp({ Component, emotionCache = clientSideEmotionCache
     <VercelAnalytics debug={false} />
   </>;
 }
+
+export default trpc.withTRPC(MyApp);
